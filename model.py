@@ -23,15 +23,12 @@ from tensorflow.keras.optimizers import Adam
 
 base_skin_dir = 'D:\Competitions\SkinCancer\Model\input'
 print(base_skin_dir)
-print("################################")
 
-# Merging images from both folders HAM10000_images_part1.zip and HAM10000_images_part2.zip into one dictionary
 
 imageid_path_dict = {os.path.splitext(os.path.basename(x))[0]: x for x in glob.glob(os.path.join(base_skin_dir,'*.jpg'))}
 
 print(imageid_path_dict)
-print('####################')
-# This dictionary is useful for displaying more human-friendly labels later on
+
 
 lesion_type_dict = {
     'nv': 'Melanocytic nevi',
@@ -58,7 +55,6 @@ skin_df['image'] = (skin_df['path'].map(lambda x: np.asarray(Image.open(x).resiz
  
 print(skin_df.head())
 
-print('############')
 
 print(skin_df['image'].map(lambda x: x.shape).value_counts())
 
@@ -70,6 +66,7 @@ x_train_o, x_test_o, y_train_o, y_test_o = train_test_split(features, target, te
 x_train = np.asarray(x_train_o['image'].tolist())
 x_test = np.asarray(x_test_o['image'].tolist())
 
+#Normalizing the dataset
 x_train_mean = np.mean(x_train)
 x_train_std = np.std(x_train)
 
@@ -111,10 +108,13 @@ model.add(Flatten())
 model.add(Dense(128, activation='relu'))
 model.add(Dropout(0.5))
 model.add(Dense(num_classes, activation='softmax'))
+
+#printing the model summary
 print(model.summary())
 
+#Setting the optimizer
 optimizer = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
-
+# Compiling the model with Error minimizing algorithm
 model.compile(optimizer = optimizer , loss = "categorical_crossentropy", metrics=["accuracy"])
 
 learning_rate_reduction = ReduceLROnPlateau(monitor='val_acc', patience=3, verbose=1, factor=0.5, min_lr=0.00001)
@@ -137,11 +137,14 @@ datagen = ImageDataGenerator(
 datagen.fit(x_train)
 epochs = 50
 batch_size = 10
+##Training the model
 model.fit(datagen.flow(x_train,y_train, batch_size=batch_size),
                               epochs = epochs, validation_data = (x_validate,y_validate),
                               verbose = 1, steps_per_epoch=x_train.shape[0] // batch_size
                               , callbacks=[learning_rate_reduction])
 
+
+#Displaying Accuracy and Loss for training and testing dataset
 
 loss, accuracy = model.evaluate(x_test, y_test, verbose=1)
 loss_v, accuracy_v = model.evaluate(x_validate, y_validate, verbose=1)
