@@ -1,2 +1,2 @@
 # Pocket-Dermatologist
-Skin Cancer Detection App
+Skin Cancer Detection code using Convolutional Neural Netork
